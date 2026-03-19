@@ -376,6 +376,15 @@ const (
 	// Allows setting any FQDN as the pod's hostname
 	HostnameOverride featuregate.Feature = "HostnameOverride"
 
+	// owner: @jingczhang
+	//
+	// Subtracts hugepage capacity from memory.available so the eviction signal
+	// reflects actual regular-memory availability. This corrects a long-standing
+	// bug where hugepage-reserved RAM inflated AvailableBytes, delaying eviction.
+	// Users observing regressions can disable this feature gate to restore the
+	// old behavior. The feature gate will be locked to true in 1.39 and removed in 1.40.
+	HugepageAwareEviction featuregate.Feature = "HugepageAwareEviction"
+
 	// owner: @haircommander
 	// kep: http://kep.k8s.io/4210
 	// ImageMaximumGCAge enables the Kubelet configuration field of the same name, allowing an admin
@@ -1357,6 +1366,11 @@ var defaultVersionedKubernetesFeatureGates = map[featuregate.Feature]featuregate
 		{Version: version.MustParse("1.35"), Default: true, PreRelease: featuregate.Beta},
 	},
 
+	HugepageAwareEviction: {
+		{Version: version.MustParse("1.0"), Default: false, PreRelease: featuregate.GA},
+		{Version: version.MustParse("1.35"), Default: true, PreRelease: featuregate.Deprecated}, // lock to default in 1.39, remove in 1.40
+	},
+
 	ImageMaximumGCAge: {
 		{Version: version.MustParse("1.29"), Default: false, PreRelease: featuregate.Alpha},
 		{Version: version.MustParse("1.30"), Default: true, PreRelease: featuregate.Beta},
@@ -2263,6 +2277,8 @@ var defaultKubernetesFeatureGateDependencies = map[featuregate.Feature][]feature
 	HonorPVReclaimPolicy: {},
 
 	HostnameOverride: {},
+
+	HugepageAwareEviction: {},
 
 	ImageMaximumGCAge: {},
 
